@@ -12,7 +12,6 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, onNavigate }) => {
   const { activeList } = useData();
 
   const navItems = [
-    { screen: Screen.MyLists, label: 'Minhas Listas', icon: <ListIcon /> },
     {
       screen: Screen.ShoppingList,
       label: activeList ? activeList.name : 'Lista Atual',
