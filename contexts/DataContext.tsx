@@ -19,7 +19,7 @@ interface DataContextType {
   addCategory: (category: string) => void;
   deleteCategory: (category: string) => void;
   updateCategory: (oldName: string, newName: string) => void;
-  addProduct: (item: Pick<ShoppingItem, 'name' | 'category'>) => void;
+  addProduct: (item: Pick<ShoppingItem, 'name' | 'category' | 'unit'>) => void;
   deleteProduct: (itemId: string) => void;
   updateProduct: (item: ShoppingItem) => void;
 }
@@ -116,7 +116,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addProduct = (item: Pick<ShoppingItem, 'name' | 'category'>) => {
+  const addProduct = (item: Pick<ShoppingItem, 'name' | 'category' | 'unit'>) => {
     const newProduct: ShoppingItem = {
       ...item,
       id: crypto.randomUUID(),

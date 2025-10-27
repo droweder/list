@@ -15,6 +15,7 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
   const [showNewProductForm, setShowNewProductForm] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
+  const [newItemUnit, setNewItemUnit] = useState('');
   const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
   const filteredProducts = useMemo(() =>
@@ -34,14 +35,16 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
 
   const handleAddNewProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newItemName && newItemCategory) {
+    if (newItemName && newItemCategory && newItemUnit) {
       const newProduct = {
         name: newItemName,
         category: newItemCategory,
+        unit: newItemUnit,
       };
       addProduct(newProduct);
       setNewItemName('');
       setNewItemCategory(categories[0] || '');
+      setNewItemUnit('');
       setShowNewProductForm(false);
       setSearchTerm('');
     }
@@ -92,6 +95,18 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
                   placeholder="Ex: Leite Integral"
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
+                  required
+                  className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="new-item-unit" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Unidade</label>
+                <input
+                  id="new-item-unit"
+                  type="text"
+                  placeholder="Ex: kg, L, Unidade"
+                  value={newItemUnit}
+                  onChange={(e) => setNewItemUnit(e.target.value)}
                   required
                   className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />

@@ -29,33 +29,15 @@ const ShoppingListScreen: React.FC = () => {
     setShowToast(false);
   };
 
-  const handleEditItem = (item: ShoppingItem) => {
-    setEditingItem(item);
-    navigate(Screen.ItemForm);
-  };
-
   const handleAddItemFromBank = (item: ShoppingItem) => {
     if (!activeList) return;
 
-    const newItem = { ...item, id: crypto.randomUUID(), purchased: false };
+    const newItem = { ...item, id: crypto.randomUUID(), purchased: false, quantity: 1 };
     const updatedItems = [...activeList.items, newItem];
     updateActiveList({ items: updatedItems });
   };
 
-  const groupedItems = items.reduce((acc, item) => {
-    const category = item.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(item);
-    return acc;
-  }, {} as Record<string, ShoppingItem[]>);
-
-  Object.keys(groupedItems).forEach(category => {
-    groupedItems[category].sort((a, b) => a.name.localeCompare(b.name));
-  });
-
-  const categories = Object.keys(groupedItems).sort();
+  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div>
@@ -65,39 +47,33 @@ const ShoppingListScreen: React.FC = () => {
         </div>
       </Header>
 
-      <div className="max-w-4xl mx-auto p-4 space-y-4">
+      <div className="max-w-4xl mx-auto p-4">
         {items.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500 dark:text-gray-400">Sua lista está vazia.</p>
             <p className="text-gray-500 dark:text-gray-400">Clique em "+" para adicionar itens.</p>
           </div>
         ) : (
-          categories.map(category => (
-            <div key={category} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">{category}</h2>
-              <ul>
-                {groupedItems[category].map(item => (
-                  <li key={item.id} className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                    <div className="flex-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {sortedItems.map(item => (
+                <li key={item.id} className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{item.category}</span>
+                    <div>
                       <p className='text-gray-900 dark:text-gray-100'>{item.name}</p>
                       <p className='text-sm text-gray-500 dark:text-gray-400'>
-                        {item.quantity > 1 ? `Qtd: ${item.quantity}` : ''}
-                        {item.notes ? ` - ${item.notes}` : ''}
+                        {item.quantity} {item.unit}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => handleEditItem(item)} className="p-2 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50">
-                        <PencilIcon />
-                      </button>
-                      <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
-                        <TrashIcon />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
+                  </div>
+                  <button onClick={() => handleRemoveItem(item.id)} className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
+                    <TrashIcon />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
 
@@ -132,14 +108,8 @@ const PlusIcon = () => (
   </svg>
 );
 
-const PencilIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-  </svg>
-);
-
 const TrashIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
   </svg>
 );
