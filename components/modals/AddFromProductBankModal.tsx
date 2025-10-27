@@ -1,6 +1,5 @@
-
 // components/modals/AddFromProductBankModal.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { ShoppingItem } from '@/types';
 
@@ -11,21 +10,29 @@ interface Props {
 }
 
 const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }) => {
-  const { products, addProduct } = useData();
+  const { products, categories, addProduct } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewProductForm, setShowNewProductForm] = useState(false);
   const [newItemName, setNewItemName] = useState('');
-  const [newItemCategory, setNewItemCategory] = useState('');
+  const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
 
-  if (!isOpen) {
-    return null;
-  }
+  const filteredProducts = useMemo(() =>
+    products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [products, searchTerm]);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const groupedProducts = useMemo(() =>
+    filteredProducts.reduce((acc, item) => {
+      const category = item.category;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {} as Record<string, ShoppingItem[]>), [filteredProducts]);
 
-  const handleAddNewProduct = () => {
+  const handleAddNewProduct = (e: React.FormEvent) => {
+    e.preventDefault();
     if (newItemName && newItemCategory) {
       const newProduct = {
         name: newItemName,
@@ -33,73 +40,124 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
       };
       addProduct(newProduct);
       setNewItemName('');
-      setNewItemCategory('');
+      setNewItemCategory(categories[0] || '');
       setShowNewProductForm(false);
+      setSearchTerm('');
     }
   };
 
+  const handleClose = () => {
+    setSearchTerm('');
+    setShowNewProductForm(false);
+    onClose();
+  }
+
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-4 rounded-lg">
-        <h2 className="text-xl font-bold mb-4">Add from Product Bank</h2>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-        <ul className="mt-4">
-          {filteredProducts.map(product => (
-            <li key={product.id} className="flex justify-between items-center p-2 border-b">
-              <span>{product.name}</span>
-              <button
-                onClick={() => onAddItem(product)}
-                className="bg-blue-500 text-white px-2 py-1 rounded"
-              >
-                Add
-              </button>
-            </li>
-          ))}
-        </ul>
-        {showNewProductForm ? (
-          <div className="mt-4">
-            <h3 className="font-bold">Add New Product</h3>
-            <input
-              type="text"
-              placeholder="Product Name"
-              value={newItemName}
-              onChange={(e) => setNewItemName(e.target.value)}
-              className="w-full p-2 border rounded mt-2"
-            />
-            <input
-              type="text"
-              placeholder="Category"
-              value={newItemCategory}
-              onChange={(e) => setNewItemCategory(e.target.value)}
-              className="w-full p-2 border rounded mt-2"
-            />
-            <button
-              onClick={handleAddNewProduct}
-              className="bg-green-500 text-white px-2 py-1 rounded mt-2"
-            >
-              Save Product
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowNewProductForm(true)}
-            className="bg-gray-500 text-white px-2 py-1 rounded mt-4"
-          >
-            Product Not Found? Add New
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md flex flex-col" style={{maxHeight: '80vh'}}>
+        <header className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            {showNewProductForm ? 'Adicionar Novo Produto' : 'Adicionar da Despensa'}
+          </h2>
+          <button onClick={handleClose} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+            <XIcon />
           </button>
+        </header>
+
+        <div className="p-4 flex-grow overflow-y-auto">
+          {showNewProductForm ? (
+            <form onSubmit={handleAddNewProduct} className="space-y-4">
+              <div>
+                <label htmlFor="new-item-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Produto</label>
+                <input
+                  id="new-item-name"
+                  type="text"
+                  placeholder="Ex: Leite Integral"
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  required
+                  className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="new-item-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Categoria</label>
+                <select
+                  id="new-item-category"
+                  value={newItemCategory}
+                  onChange={(e) => setNewItemCategory(e.target.value)}
+                  className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                >
+                  {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowNewProductForm(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  Cancelar
+                </button>
+                <button type="submit" className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                  Salvar Produto
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Buscar produtos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-2 mb-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              />
+              <div className="space-y-4">
+                {Object.keys(groupedProducts).sort().map(category => (
+                  <div key={category}>
+                    <h3 className="text-md font-semibold text-gray-600 dark:text-gray-300 px-1 mb-2">{category}</h3>
+                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {groupedProducts[category].map(product => (
+                        <li key={product.id} className="flex justify-between items-center py-2 px-1">
+                          <span className="text-gray-800 dark:text-gray-100">{product.name}</span>
+                          <button
+                            onClick={() => onAddItem(product)}
+                            className="px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200"
+                          >
+                            Adicionar
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                {filteredProducts.length === 0 && (
+                   <p className="text-center text-gray-500 dark:text-gray-400 py-4">Nenhum produto encontrado.</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {!showNewProductForm && (
+          <footer className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setShowNewProductForm(true)}
+              className="w-full text-center text-sm text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              Não encontrou o produto? Adicione um novo
+            </button>
+          </footer>
         )}
-        <button onClick={onClose} className="mt-4 bg-red-500 text-white px-2 py-1 rounded">
-          Close
-        </button>
       </div>
     </div>
   );
 };
+
+const XIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
 export default AddFromProductBankModal;
