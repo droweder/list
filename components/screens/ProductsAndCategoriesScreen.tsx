@@ -47,14 +47,14 @@ const ProductsAndCategoriesScreen: React.FC = () => {
 };
 
 const ProductManagementTab: React.FC = () => {
-  const { presetItems, categories, addPresetItem, updatePresetItem, deletePresetItem } = useData();
+  const { products, categories, addProduct, updateProduct, deleteProduct } = useData();
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addPresetItem({ name: newItemName, category: newItemCategory });
+    addProduct({ name: newItemName, category: newItemCategory });
     setNewItemName('');
   };
 
@@ -64,7 +64,7 @@ const ProductManagementTab: React.FC = () => {
 
   const handleUpdate = () => {
     if (editingItem) {
-      updatePresetItem(editingItem);
+      updateProduct(editingItem);
       setEditingItem(null);
     }
   };
@@ -73,7 +73,7 @@ const ProductManagementTab: React.FC = () => {
     setEditingItem(null);
   }
 
-  const groupedItems = presetItems.reduce((acc, item) => {
+  const groupedItems = products.reduce((acc, item) => {
     const category = item.category;
     if (!acc[category]) acc[category] = [];
     acc[category].push(item);
@@ -119,7 +119,7 @@ const ProductManagementTab: React.FC = () => {
                     ) : (
                       <>
                         <button onClick={() => handleEdit(item)} className="p-1 text-blue-500 hover:text-blue-700"><PencilIcon /></button>
-                        <button onClick={() => deletePresetItem(item.id)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
+                        <button onClick={() => deleteProduct(item.id)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
                       </>
                     )}
                   </div>
