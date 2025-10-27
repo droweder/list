@@ -37,7 +37,11 @@ const ShoppingListScreen: React.FC = () => {
     updateActiveList({ items: updatedItems });
   };
 
-  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedItems = [...items].sort((a, b) => {
+    if (a.category < b.category) return -1;
+    if (a.category > b.category) return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div>
@@ -97,6 +101,7 @@ const ShoppingListScreen: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddItem={handleAddItemFromBank}
+        listItems={items}
       />
     </div>
   );
