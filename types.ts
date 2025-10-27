@@ -24,6 +24,7 @@ export interface Member {
 export interface ShoppingList {
   id: string;
   name: string;
+  icon?: string;
   items: ShoppingItem[];
   members: Member[];
 }

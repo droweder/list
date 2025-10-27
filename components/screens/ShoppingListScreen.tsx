@@ -1,13 +1,15 @@
 // components/screens/ShoppingListScreen.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useUI } from '@/contexts/UIContext';
 import { Screen, ShoppingItem } from '@/types';
 import Header from '../ui/Header';
+import Toast from '../ui/Toast';
 
 const ShoppingListScreen: React.FC = () => {
-  const { activeList, updateActiveList } = useData();
+  const { activeList, removeItemFromActiveList, undoRemoveItem, lastRemovedItem } = useData();
   const { navigate, setEditingItem } = useUI();
+  const [showToast, setShowToast] = useState(false);
 
   if (!activeList) {
     return null;
@@ -15,11 +17,14 @@ const ShoppingListScreen: React.FC = () => {
 
   const { name: listName, items } = activeList;
 
-  const handleToggleItem = (itemId: string) => {
-    const updatedItems = items.map(item =>
-      item.id === itemId ? { ...item, purchased: !item.purchased } : item
-    );
-    updateActiveList({ items: updatedItems });
+  const handleRemoveItem = (itemId: string) => {
+    removeItemFromActiveList(itemId);
+    setShowToast(true);
+  };
+
+  const handleUndoRemove = () => {
+    undoRemoveItem();
+    setShowToast(false);
   };
 
   const handleEditItem = (item: ShoppingItem) => {
@@ -41,6 +46,10 @@ const ShoppingListScreen: React.FC = () => {
     return acc;
   }, {} as Record<string, ShoppingItem[]>);
 
+  Object.keys(groupedItems).forEach(category => {
+    groupedItems[category].sort((a, b) => a.name.localeCompare(b.name));
+  });
+
   const categories = Object.keys(groupedItems).sort();
   const purchasedCount = items.filter(item => item.purchased).length;
   const totalCount = items.length;
@@ -49,13 +58,7 @@ const ShoppingListScreen: React.FC = () => {
     <div>
       <Header title={listName}>
         <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-          <span>{purchasedCount}/{totalCount}</span>
-          <div className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
-            <div
-              className="h-2 bg-primary-500 rounded-full"
-              style={{ width: `${totalCount > 0 ? (purchasedCount / totalCount) * 100 : 0}%` }}
-            ></div>
-          </div>
+          <span>{items.length} itens</span>
         </div>
       </Header>
 
@@ -75,16 +78,16 @@ const ShoppingListScreen: React.FC = () => {
                     <div className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={item.purchased}
+                        checked={false}
                         onChange={(e) => {
                           e.stopPropagation();
-                          handleToggleItem(item.id);
+                          handleRemoveItem(item.id);
                         }}
-                        className="h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        className="h-5 w-5 rounded-full border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <div className="ml-4">
-                        <p className={`font-medium ${item.purchased ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{item.name}</p>
-                        <p className={`text-sm ${item.purchased ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                        <p className='text-gray-900 dark:text-gray-100'>{item.name}</p>
+                        <p className='text-sm text-gray-500 dark:text-gray-400'>
                           {item.quantity > 1 ? `Qtd: ${item.quantity}` : ''}
                           {item.notes ? ` - ${item.notes}` : ''}
                         </p>
@@ -105,12 +108,20 @@ const ShoppingListScreen: React.FC = () => {
       >
         <PlusIcon />
       </button>
+
+      {showToast && lastRemovedItem && (
+        <Toast
+          message={`${lastRemovedItem.name} removido.`}
+          onUndo={handleUndoRemove}
+          onDismiss={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };
 
 const PlusIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
   </svg>
 )
