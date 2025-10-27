@@ -58,6 +58,13 @@ const SettingsScreen: React.FC = () => {
             </div>
             <ChevronRightIcon />
           </button>
+          <button onClick={() => navigate(Screen.MyLists)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+            <div>
+              <h3 className="text-md font-medium text-gray-800 dark:text-gray-100">Gerenciar Listas</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Crie, renomeie ou exclua suas listas de compras.</p>
+            </div>
+            <ChevronRightIcon />
+          </button>
           <button onClick={() => navigate(Screen.ProductsAndCategories)} className="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
             <div>
               <h3 className="text-md font-medium text-gray-800 dark:text-gray-100">Gerenciar Produtos e Categorias</h3>

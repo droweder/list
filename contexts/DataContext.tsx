@@ -8,11 +8,14 @@ interface DataContextType {
   activeList: ShoppingList | undefined;
   categories: string[];
   presetItems: ShoppingItem[];
-  addList: (name: string, user: Member | null) => void;
+  addList: (name: string, icon: string, user: Member | null) => void;
   deleteList: (listId: string) => void;
   renameList: (listId: string, newName: string) => void;
   setActiveListId: (listId: string | null) => void;
   updateActiveList: (updatedList: Partial<ShoppingList>) => void;
+  removeItemFromActiveList: (itemId: string) => void;
+  undoRemoveItem: () => void;
+  lastRemovedItem: ShoppingItem | null;
   addCategory: (category: string) => void;
   deleteCategory: (category: string) => void;
   updateCategory: (oldName: string, newName: string) => void;
@@ -28,13 +31,15 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [activeListId, setActiveListId] = useState<string | null>(INITIAL_LISTS[0]?.id || null);
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
   const [presetItems, setPresetItems] = useState<ShoppingItem[]>(INITIAL_PRESET_ITEMS);
+  const [lastRemovedItem, setLastRemovedItem] = useState<ShoppingItem | null>(null);
 
   const activeList = lists.find(list => list.id === activeListId);
 
-  const addList = (name: string, user: Member | null) => {
+  const addList = (name: string, icon: string, user: Member | null) => {
     const newList: ShoppingList = {
       id: crypto.randomUUID(),
       name,
+      icon,
       items: [],
       members: user ? [user] : [],
     };
@@ -61,6 +66,24 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setLists(lists.map(list =>
       list.id === activeListId ? { ...list, ...updatedList } : list
     ));
+  };
+
+  const removeItemFromActiveList = (itemId: string) => {
+    if (!activeList) return;
+    const itemToRemove = activeList.items.find(item => item.id === itemId);
+    if (itemToRemove) {
+      setLastRemovedItem(itemToRemove);
+      const updatedItems = activeList.items.filter(item => item.id !== itemId);
+      updateActiveList({ items: updatedItems });
+    }
+  };
+
+  const undoRemoveItem = () => {
+    if (lastRemovedItem && activeList) {
+      const updatedItems = [...activeList.items, lastRemovedItem].sort((a, b) => a.name.localeCompare(b.name));
+      updateActiveList({ items: updatedItems });
+      setLastRemovedItem(null);
+    }
   };
 
   const addCategory = (category: string) => {
@@ -123,6 +146,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       renameList,
       setActiveListId,
       updateActiveList,
+      removeItemFromActiveList,
+      undoRemoveItem,
+      lastRemovedItem,
       addCategory,
       deleteCategory,
       updateCategory,
