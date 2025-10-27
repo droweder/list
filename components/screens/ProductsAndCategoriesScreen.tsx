@@ -1,19 +1,10 @@
+// components/screens/ProductsAndCategoriesScreen.tsx
 import React, { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
 import Header from '../ui/Header';
-import { ShoppingItem } from '../../types';
+import { ShoppingItem } from '@/types';
 
-interface ProductsAndCategoriesScreenProps {
-  categories: string[];
-  onAddCategory: (category: string) => void;
-  onDeleteCategory: (category: string) => void;
-  onUpdateCategory: (oldName: string, newName: string) => void;
-  presetItems: ShoppingItem[];
-  onAddPresetItem: (item: Pick<ShoppingItem, 'name' | 'category'>) => void;
-  onDeletePresetItem: (itemId: string) => void;
-  onUpdatePresetItem: (item: ShoppingItem) => void;
-}
-
-const ProductsAndCategoriesScreen: React.FC<ProductsAndCategoriesScreenProps> = (props) => {
+const ProductsAndCategoriesScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
 
   return (
@@ -21,199 +12,201 @@ const ProductsAndCategoriesScreen: React.FC<ProductsAndCategoriesScreenProps> = 
       <Header title="Produtos e Categorias" />
       <div className="max-w-4xl mx-auto p-4">
         <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
-            <ul className="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
-                <li className="mr-2" role="presentation">
-                    <button 
-                        className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'products' ? 'border-primary-600 text-primary-600' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
-                        onClick={() => setActiveTab('products')}
-                        role="tab"
-                        aria-controls="products"
-                        aria-selected={activeTab === 'products'}
-                    >
-                        Produtos
-                    </button>
-                </li>
-                <li className="mr-2" role="presentation">
-                     <button 
-                        className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'categories' ? 'border-primary-600 text-primary-600' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
-                        onClick={() => setActiveTab('categories')}
-                        role="tab"
-                        aria-controls="categories"
-                        aria-selected={activeTab === 'categories'}
-                    >
-                        Categorias
-                    </button>
-                </li>
-            </ul>
+          <ul className="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
+            <li className="mr-2" role="presentation">
+              <button
+                className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'products' ? 'border-primary-600 text-primary-600' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+                onClick={() => setActiveTab('products')}
+                role="tab"
+                aria-controls="products"
+                aria-selected={activeTab === 'products'}
+              >
+                Produtos
+              </button>
+            </li>
+            <li className="mr-2" role="presentation">
+              <button
+                className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'categories' ? 'border-primary-600 text-primary-600' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+                onClick={() => setActiveTab('categories')}
+                role="tab"
+                aria-controls="categories"
+                aria-selected={activeTab === 'categories'}
+              >
+                Categorias
+              </button>
+            </li>
+          </ul>
         </div>
         <div>
-            {activeTab === 'products' && <ProductManagementTab {...props} />}
-            {activeTab === 'categories' && <CategoryManagementTab {...props} />}
+          {activeTab === 'products' && <ProductManagementTab />}
+          {activeTab === 'categories' && <CategoryManagementTab />}
         </div>
       </div>
     </div>
   );
 };
 
-const ProductManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ presetItems, categories, onAddPresetItem, onUpdatePresetItem, onDeletePresetItem }) => {
-    const [newItemName, setNewItemName] = useState('');
-    const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
-    const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
+const ProductManagementTab: React.FC = () => {
+  const { presetItems, categories, addPresetItem, updatePresetItem, deletePresetItem } = useData();
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
+  const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
 
-    const handleAddSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onAddPresetItem({ name: newItemName, category: newItemCategory });
-        setNewItemName('');
-    };
-    
-    const handleEdit = (item: ShoppingItem) => {
-        setEditingItem(item);
-    };
-    
-    const handleUpdate = () => {
-        if (editingItem) {
-            onUpdatePresetItem(editingItem);
-            setEditingItem(null);
-        }
-    };
-    
-    const handleCancelEdit = () => {
-        setEditingItem(null);
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addPresetItem({ name: newItemName, category: newItemCategory });
+    setNewItemName('');
+  };
+
+  const handleEdit = (item: ShoppingItem) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = () => {
+    if (editingItem) {
+      updatePresetItem(editingItem);
+      setEditingItem(null);
     }
+  };
 
-    const groupedItems = presetItems.reduce((acc, item) => {
-        const category = item.category;
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(item);
-        return acc;
-    }, {} as Record<string, ShoppingItem[]>);
+  const handleCancelEdit = () => {
+    setEditingItem(null);
+  }
 
-    return (
-        <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Adicionar Novo Produto</h2>
-                <form onSubmit={handleAddSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input type="text" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} placeholder="Nome do produto" required className="sm:col-span-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500" />
-                    <select value={newItemCategory} onChange={(e) => setNewItemCategory(e.target.value)} className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500">
+  const groupedItems = presetItems.reduce((acc, item) => {
+    const category = item.category;
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, ShoppingItem[]>);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Adicionar Novo Produto</h2>
+        <form onSubmit={handleAddSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <input type="text" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} placeholder="Nome do produto" required className="sm:col-span-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500" />
+          <select value={newItemCategory} onChange={(e) => setNewItemCategory(e.target.value)} className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500">
+            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+          <button type="submit" className="sm:col-span-3 w-full px-6 py-2 border-transparent rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Adicionar Produto</button>
+        </form>
+      </div>
+
+      <div className="space-y-4">
+        {Object.keys(groupedItems).sort().map(category => (
+          <div key={category} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">{category}</h2>
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {groupedItems[category].map(item => (
+                <li key={item.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  {editingItem?.id === item.id ? (
+                    <div className="flex-grow w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input type="text" value={editingItem.name} onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md" />
+                      <select value={editingItem.category} onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md">
                         {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                    </select>
-                    <button type="submit" className="sm:col-span-3 w-full px-6 py-2 border-transparent rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Adicionar Produto</button>
-                </form>
-            </div>
-
-            <div className="space-y-4">
-                {Object.keys(groupedItems).sort().map(category => (
-                    <div key={category} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">{category}</h2>
-                        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {groupedItems[category].map(item => (
-                                <li key={item.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                    {editingItem?.id === item.id ? (
-                                        <div className="flex-grow w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            <input type="text" value={editingItem.name} onChange={(e) => setEditingItem({...editingItem, name: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md" />
-                                            <select value={editingItem.category} onChange={(e) => setEditingItem({...editingItem, category: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md">
-                                                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        <span className="text-gray-800 dark:text-gray-100">{item.name}</span>
-                                    )}
-                                    <div className="flex items-center gap-2 self-end sm:self-center">
-                                        {editingItem?.id === item.id ? (
-                                            <>
-                                                <button onClick={handleUpdate} className="p-1 text-green-500 hover:text-green-700"><CheckIcon /></button>
-                                                <button onClick={handleCancelEdit} className="p-1 text-gray-500 hover:text-gray-700"><XIcon /></button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button onClick={() => handleEdit(item)} className="p-1 text-blue-500 hover:text-blue-700"><PencilIcon /></button>
-                                                <button onClick={() => onDeletePresetItem(item.id)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
-                                            </>
-                                        )}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                      </select>
                     </div>
-                ))}
-            </div>
-        </div>
-    );
+                  ) : (
+                    <span className="text-gray-800 dark:text-gray-100">{item.name}</span>
+                  )}
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    {editingItem?.id === item.id ? (
+                      <>
+                        <button onClick={handleUpdate} className="p-1 text-green-500 hover:text-green-700"><CheckIcon /></button>
+                        <button onClick={handleCancelEdit} className="p-1 text-gray-500 hover:text-gray-700"><XIcon /></button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEdit(item)} className="p-1 text-blue-500 hover:text-blue-700"><PencilIcon /></button>
+                        <button onClick={() => deletePresetItem(item.id)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
+                      </>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-const CategoryManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ categories, onAddCategory, onDeleteCategory, onUpdateCategory }) => {
+const CategoryManagementTab: React.FC = () => {
+  const { categories, addCategory, deleteCategory, updateCategory } = useData();
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddCategory(newCategory.trim());
+    addCategory(newCategory.trim());
     setNewCategory('');
   };
-  
+
   const handleEdit = (category: string) => {
     setEditingCategory(category);
     setEditingText(category);
   };
-  
+
   const handleUpdate = () => {
     if (editingCategory && editingText.trim()) {
-        onUpdateCategory(editingCategory, editingText.trim());
-        setEditingCategory(null);
-        setEditingText('');
+      updateCategory(editingCategory, editingText.trim());
+      setEditingCategory(null);
+      setEditingText('');
     }
   };
-  
+
   const handleCancelEdit = () => {
     setEditingCategory(null);
     setEditingText('');
   }
-  
+
   const handleDelete = (category: string) => {
     if (window.confirm(`Tem certeza que deseja excluir a categoria "${category}"? Os itens nesta categoria serão movidos para "Outros".`)) {
-        onDeleteCategory(category);
+      deleteCategory(category);
     }
   };
 
   return (
-      <div className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Adicionar Nova Categoria</h2>
-          <form onSubmit={handleAddSubmit} className="flex flex-col sm:flex-row gap-2">
-            <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Nome da categoria" required className="flex-grow px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500" />
-            <button type="submit" className="px-6 py-2 border-transparent rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Adicionar</button>
-          </form>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">Minhas Categorias</h2>
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {categories.map(category => (
-                <li key={category} className="p-4 flex justify-between items-center">
-                {editingCategory === category ? (
-                    <input type="text" value={editingText} onChange={(e) => setEditingText(e.target.value)} onBlur={handleUpdate} onKeyDown={(e) => e.key === 'Enter' && handleUpdate()} autoFocus className="flex-grow px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md" />
-                ) : (
-                    <span className="text-gray-800 dark:text-gray-100">{category}</span>
-                )}
-                <div className="flex items-center gap-2">
-                    {editingCategory === category ? (
-                        <>
-                           <button onClick={handleUpdate} className="p-1 text-green-500 hover:text-green-700"><CheckIcon /></button>
-                           <button onClick={handleCancelEdit} className="p-1 text-gray-500 hover:text-gray-700"><XIcon /></button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={() => handleEdit(category)} className="p-1 text-blue-500 hover:text-blue-700"><PencilIcon /></button>
-                            <button onClick={() => handleDelete(category)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
-                        </>
-                    )}
-                </div>
-                </li>
-            ))}
-            </ul>
-        </div>
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Adicionar Nova Categoria</h2>
+        <form onSubmit={handleAddSubmit} className="flex flex-col sm:flex-row gap-2">
+          <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Nome da categoria" required className="flex-grow px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500" />
+          <button type="submit" className="px-6 py-2 border-transparent rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Adicionar</button>
+        </form>
       </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">Minhas Categorias</h2>
+        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+          {categories.map(category => (
+            <li key={category} className="p-4 flex justify-between items-center">
+              {editingCategory === category ? (
+                <input type="text" value={editingText} onChange={(e) => setEditingText(e.target.value)} onBlur={handleUpdate} onKeyDown={(e) => e.key === 'Enter' && handleUpdate()} autoFocus className="flex-grow px-2 py-1 bg-white dark:bg-gray-700 border border-primary-500 rounded-md" />
+              ) : (
+                <span className="text-gray-800 dark:text-gray-100">{category}</span>
+              )}
+              <div className="flex items-center gap-2">
+                {editingCategory === category ? (
+                  <>
+                    <button onClick={handleUpdate} className="p-1 text-green-500 hover:text-green-700"><CheckIcon /></button>
+                    <button onClick={handleCancelEdit} className="p-1 text-gray-500 hover:text-gray-700"><XIcon /></button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => handleEdit(category)} className="p-1 text-blue-500 hover:text-blue-700"><PencilIcon /></button>
+                    <button onClick={() => handleDelete(category)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon /></button>
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 };
 

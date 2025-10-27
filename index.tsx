@@ -10,8 +10,18 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+import { AuthProvider } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
+import { UIProvider } from './contexts/UIContext';
+
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <DataProvider>
+        <UIProvider>
+          <App />
+        </UIProvider>
+      </DataProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
