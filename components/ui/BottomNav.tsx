@@ -5,30 +5,43 @@ import { useData } from '@/contexts/DataContext';
 
 interface BottomNavProps {
   activeScreen: Screen;
-  onNavigate: (screen: Screen) => void;
+  onNavigate: (screen: Screen, listId?: string) => void;
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, onNavigate }) => {
-  const { activeList } = useData();
+  const { lists, activeList, setActiveListId } = useData();
+
+  const handleListNavigation = (listId: string) => {
+    setActiveListId(listId);
+    onNavigate(Screen.ShoppingList, listId);
+  };
 
   const navItems = [
+    ...lists.map(list => ({
+      id: list.id,
+      label: list.name,
+      icon: list.icon ? <span className="text-2xl">{list.icon}</span> : <ShoppingCartIcon />,
+      isActive: activeScreen === Screen.ShoppingList && activeList?.id === list.id,
+      onClick: () => handleListNavigation(list.id),
+    })),
     {
-      screen: Screen.ShoppingList,
-      label: activeList ? activeList.name : 'Lista Atual',
-      icon: activeList && activeList.icon ? <span className="text-2xl">{activeList.icon}</span> : <ShoppingCartIcon />,
+      id: Screen.Settings,
+      label: 'Ajustes',
+      icon: <CogIcon />,
+      isActive: activeScreen === Screen.Settings,
+      onClick: () => onNavigate(Screen.Settings),
     },
-    { screen: Screen.Settings, label: 'Ajustes', icon: <CogIcon /> },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1)]">
       <div className="max-w-4xl mx-auto flex justify-around">
-        {navItems.map(({ screen, label, icon }) => (
+        {navItems.map(({ id, label, icon, isActive, onClick }) => (
           <button
-            key={screen}
-            onClick={() => onNavigate(screen)}
+            key={id}
+            onClick={onClick}
             className={`flex flex-col items-center justify-center w-full py-2 px-1 text-center transition-colors duration-200 ${
-              activeScreen === screen
+              isActive
                 ? 'text-primary-600 dark:text-primary-400'
                 : 'text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-300'
             }`}
@@ -42,12 +55,6 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, onNavigate }) => {
   );
 };
 
-
-const ListIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-  </svg>
-);
 const ShoppingCartIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

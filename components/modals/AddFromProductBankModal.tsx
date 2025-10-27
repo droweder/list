@@ -7,9 +7,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onAddItem: (item: ShoppingItem) => void;
+  listItems: ShoppingItem[];
 }
 
-const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }) => {
+const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem, listItems }) => {
   const { products, categories, addProduct } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewProductForm, setShowNewProductForm] = useState(false);
@@ -71,6 +72,10 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
   if (!isOpen) {
     return null;
   }
+
+  const isItemInList = (itemId: string) => {
+    return listItems.some(item => item.id === itemId);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
@@ -150,13 +155,16 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
                           <span className="text-gray-800 dark:text-gray-100">{product.name}</span>
                           <button
                             onClick={() => handleAddItemClick(product)}
+                            disabled={isItemInList(product.id)}
                             className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                               addedItemId === product.id
                                 ? 'bg-green-500 text-white'
+                                : isItemInList(product.id)
+                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                                 : 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/50'
                             }`}
                           >
-                            {addedItemId === product.id ? 'Adicionado!' : 'Adicionar'}
+                            {addedItemId === product.id ? 'Adicionado!' : isItemInList(product.id) ? 'Adicionado' : 'Adicionar'}
                           </button>
                         </li>
                       ))}
