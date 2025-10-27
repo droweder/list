@@ -87,7 +87,7 @@ function App() {
     if (itemToSave.id) { 
       updatedItems = activeList.items.map(item => item.id === itemToSave.id ? itemToSave : item);
     } else {
-      updatedItems = [...activeList.items, { ...itemToSave, id: Date.now().toString(), purchased: false }];
+      updatedItems = [...activeList.items, { ...itemToSave, id: crypto.randomUUID(), purchased: false }];
     }
     handleUpdateItems(updatedItems);
     setCurrentScreen(Screen.ShoppingList);
@@ -115,7 +115,7 @@ function App() {
         return;
     }
     const newMember: Member = {
-        id: `member-${Date.now()}`,
+        id: crypto.randomUUID(),
         name: email.split('@')[0], // Simple name generation
         email: email,
     };
@@ -130,7 +130,7 @@ function App() {
   };
   
   const handleAddCategory = (category: string) => {
-    if (category && !categories.includes(category)) {
+    if (category && !categories.some(c => c.toLowerCase() === category.toLowerCase())) {
       setCategories([...categories, category]);
     }
   };
@@ -147,7 +147,7 @@ function App() {
   };
   
   const handleUpdateCategory = (oldName: string, newName: string) => {
-    if (newName && !categories.includes(newName)) {
+    if (newName && !categories.some(c => c.toLowerCase() === newName.toLowerCase())) {
       const updatedLists = lists.map(list => ({
           ...list,
           items: list.items.map(item =>
@@ -162,7 +162,7 @@ function App() {
   const handleAddPresetItem = (item: Pick<ShoppingItem, 'name' | 'category'>) => {
     const newPreset: ShoppingItem = {
       ...item,
-      id: `preset-${Date.now()}`,
+      id: crypto.randomUUID(),
       quantity: 1,
       notes: '',
       purchased: false,
@@ -180,7 +180,7 @@ function App() {
   
   const handleAddList = (name: string) => {
       const newList: ShoppingList = {
-          id: `list-${Date.now()}`,
+          id: crypto.randomUUID(),
           name,
           items: [],
           members: user ? [user] : [],
