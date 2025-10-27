@@ -34,11 +34,6 @@ const ShoppingListScreen: React.FC = () => {
     navigate(Screen.ItemForm);
   };
 
-  const handleAddItem = () => {
-    setEditingItem(null);
-    navigate(Screen.ItemForm);
-  };
-
   const handleAddItemFromBank = (item: ShoppingItem) => {
     if (!activeList) return;
 
@@ -110,22 +105,13 @@ const ShoppingListScreen: React.FC = () => {
         )}
       </div>
 
-      <div className="fixed bottom-20 right-4 flex flex-col gap-2">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-secondary-600 text-white rounded-full p-4 shadow-lg hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transform transition-transform hover:scale-110"
-          aria-label="Adicionar do banco de produtos"
-        >
-          <BankIcon />
-        </button>
-        <button
-          onClick={handleAddItem}
-          className="bg-primary-600 text-white rounded-full p-4 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transform transition-transform hover:scale-110"
-          aria-label="Adicionar item"
-        >
-          <PlusIcon />
-        </button>
-      </div>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-20 right-4 bg-primary-600 text-white rounded-full p-4 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transform transition-transform hover:scale-110"
+        aria-label="Adicionar item"
+      >
+        <PlusIcon />
+      </button>
 
       {showToast && lastRemovedItem && (
         <Toast
@@ -167,11 +153,5 @@ const ShareIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6.002l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
   </svg>
 );
-
-const BankIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M12 4v7m-4-4l4 4 4-4" />
-  </svg>
-)
 
 export default ShoppingListScreen;
