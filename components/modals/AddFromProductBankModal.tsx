@@ -1,5 +1,5 @@
 // components/modals/AddFromProductBankModal.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { ShoppingItem } from '@/types';
 
@@ -15,6 +15,7 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
   const [showNewProductForm, setShowNewProductForm] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
+  const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
   const filteredProducts = useMemo(() =>
     products.filter(product =>
@@ -45,6 +46,18 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
       setSearchTerm('');
     }
   };
+
+  const handleAddItemClick = (item: ShoppingItem) => {
+    onAddItem(item);
+    setAddedItemId(item.id);
+  };
+
+  useEffect(() => {
+    if (addedItemId) {
+      const timer = setTimeout(() => setAddedItemId(null), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [addedItemId]);
 
   const handleClose = () => {
     setSearchTerm('');
@@ -114,17 +127,21 @@ const AddFromProductBankModal: React.FC<Props> = ({ isOpen, onClose, onAddItem }
               />
               <div className="space-y-4">
                 {Object.keys(groupedProducts).sort().map(category => (
-                  <div key={category}>
-                    <h3 className="text-md font-semibold text-gray-600 dark:text-gray-300 px-1 mb-2">{category}</h3>
+                  <div key={category} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                    <h3 className="text-md font-semibold text-gray-600 dark:text-gray-300 p-3 border-b border-gray-200 dark:border-gray-700">{category}</h3>
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                       {groupedProducts[category].map(product => (
-                        <li key={product.id} className="flex justify-between items-center py-2 px-1">
+                        <li key={product.id} className="flex justify-between items-center py-2 px-3">
                           <span className="text-gray-800 dark:text-gray-100">{product.name}</span>
                           <button
-                            onClick={() => onAddItem(product)}
-                            className="px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200"
+                            onClick={() => handleAddItemClick(product)}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                              addedItemId === product.id
+                                ? 'bg-green-500 text-white'
+                                : 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/50'
+                            }`}
                           >
-                            Adicionar
+                            {addedItemId === product.id ? 'Adicionado!' : 'Adicionar'}
                           </button>
                         </li>
                       ))}
