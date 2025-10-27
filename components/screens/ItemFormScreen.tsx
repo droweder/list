@@ -6,7 +6,6 @@ import { ShoppingItem, Category, Screen } from '@/types';
 import Header from '../ui/Header';
 
 const ItemFormScreen: React.FC = () => {
-  const { categories, activeList, updateActiveList } = useData();
   const { editingItem, navigate, setEditingItem } = useUI();
   const [formData, setFormData] = useState<Omit<ShoppingItem, 'id' | 'purchased'>>({
     name: '',
@@ -26,13 +25,20 @@ const ItemFormScreen: React.FC = () => {
     }
   }, [editingItem]);
 
+  const { categories, activeList, updateActiveList, addPresetItem, presetItems } = useData();
   const handleSaveItem = (itemToSave: ShoppingItem) => {
     if (!activeList) return;
     let updatedItems;
     if (itemToSave.id) {
       updatedItems = activeList.items.map(item => item.id === itemToSave.id ? itemToSave : item);
     } else {
-      updatedItems = [...activeList.items, { ...itemToSave, id: crypto.randomUUID(), purchased: false }];
+      const newItem = { ...itemToSave, id: crypto.randomUUID(), purchased: false };
+      updatedItems = [...activeList.items, newItem];
+
+      const isPreset = presetItems.some(preset => preset.name.toLowerCase() === newItem.name.toLowerCase() && preset.category === newItem.category);
+      if (!isPreset) {
+        addPresetItem({ name: newItem.name, category: newItem.category });
+      }
     }
     updateActiveList({ items: updatedItems });
     navigate(Screen.ShoppingList);
