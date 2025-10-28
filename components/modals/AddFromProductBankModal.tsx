@@ -38,10 +38,12 @@ const AddFromProductBankModal: React.FC<AddFromProductBankModalProps> = ({ isOpe
     productsToDisplay
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
-        if (!grouped[p.category]) {
-          grouped[p.category] = [];
+        if (p.category) {
+          if (!grouped[p.category]) {
+            grouped[p.category] = [];
+          }
+          grouped[p.category].push(p);
         }
-        grouped[p.category].push(p);
       });
     return grouped;
   }, [products, searchTerm, listItems]);
@@ -92,8 +94,7 @@ const AddFromProductBankModal: React.FC<AddFromProductBankModalProps> = ({ isOpe
                     <button
                       onClick={() => handleAddItemClick(product)}
                       className={`w-28 text-center py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
-                        addedProductId === product.id ? 'bg-green-500 text-white'
-                                : 'bg-primary-600 hover:bg-primary-700 text-white'
+                        addedProductId === product.id ? 'bg-green-500 text-white' : 'bg-primary-600 hover:bg-primary-700 text-white'
                       }`}
                     >
                       {addedProductId === product.id ? 'Adicionado!' : 'Adicionar'}
