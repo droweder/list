@@ -1,6 +1,8 @@
-// components/screens/LoginScreen.tsx
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+
+interface LoginScreenProps {
+  onLogin: () => void;
+}
 
 const ShoppingCartIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -15,8 +17,7 @@ const GoogleIcon = () => (
 );
 
 
-const LoginScreen: React.FC = () => {
-  const { login } = useAuth();
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="max-w-md w-full text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
@@ -29,7 +30,7 @@ const LoginScreen: React.FC = () => {
         <p className="text-gray-500 dark:text-gray-400 mt-2 mb-10">Sua lista de compras, mais inteligente.</p>
 
         <button 
-            onClick={() => login({ id: '1', name: 'Usuário Principal', email: 'voce@email.com' })}
+            onClick={onLogin} 
             className="w-full flex items-center justify-center gap-3 bg-primary-600 text-white font-bold py-3 rounded-lg hover:bg-primary-700 transition duration-300 transform hover:scale-105 shadow-lg"
         >
           <GoogleIcon />

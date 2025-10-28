@@ -10,6 +10,7 @@ export interface ShoppingItem {
   id: string;
   name: string;
   quantity: number;
+  unit: string;
   category: Category | string;
   notes: string;
   purchased: boolean;
@@ -19,12 +20,12 @@ export interface Member {
   id: string;
   name: string;
   email: string;
+  avatar?: string;
 }
 
 export interface ShoppingList {
   id: string;
   name: string;
-  icon?: string;
   items: ShoppingItem[];
   members: Member[];
 }
@@ -32,8 +33,6 @@ export interface ShoppingList {
 export enum Screen {
   Login = 'Login',
   ShoppingList = 'ShoppingList',
-  ItemForm = 'ItemForm',
-  MyLists = 'MyLists',
   Invite = 'Invite',
   Settings = 'Settings',
   ProductsAndCategories = 'ProductsAndCategories',
