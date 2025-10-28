@@ -68,7 +68,7 @@ export const INITIAL_LISTS: ShoppingList[] = [
     }
 ];
 
-export const INITIAL_PRESET_ITEMS: ShoppingItem[] = [
+export const INITIAL_PRODUCTS: ShoppingItem[] = [
   { id: 'p1', name: 'Leite', quantity: 1, category: Category.Alimentos, notes: '', purchased: false },
   { id: 'p2', name: 'Pão', quantity: 1, category: Category.Alimentos, notes: '', purchased: false },
   { id: 'p3', name: 'Café', quantity: 1, category: Category.Alimentos, notes: '', purchased: false },
