@@ -23,13 +23,13 @@ function App() {
   }
 
   const renderScreen = () => {
-    if (!activeList && ![Screen.MyLists, Screen.Settings, Screen.ProductsAndCategories].includes(currentScreen)) {
+    if (!activeList && currentScreen === Screen.ShoppingList) {
       return <MyListsScreen />;
     }
 
     switch (currentScreen) {
       case Screen.ShoppingList:
-        return <ShoppingListScreen />;
+        return activeList ? <ShoppingListScreen /> : <MyListsScreen />;
       case Screen.MyLists:
         return <MyListsScreen />;
       case Screen.Invite:
