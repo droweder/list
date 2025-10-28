@@ -56,6 +56,21 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (session?.user) {
+      const { user: authUser } = session;
+      const currentUser: Member = {
+        id: authUser.id,
+        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Usuário',
+        email: authUser.email!,
+        avatar: authUser.user_metadata?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${authUser.email?.split('@')[0] || 'U'}`,
+      };
+      setUser(currentUser);
+    } else {
+      setUser(null);
+    }
+  }, [session]);
+
+  useEffect(() => {
     if (session) {
       const fetchLists = async () => {
         const { data, error } = await supabase
