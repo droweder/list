@@ -5,14 +5,17 @@ import { Screen } from '@/types';
 interface UIContextType {
   currentScreen: Screen;
   isDarkMode: boolean;
+  isAddModalOpen: boolean;
   navigate: (screen: Screen) => void;
   toggleDarkMode: () => void;
+  toggleAddModal: () => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
 
 export const UIProvider = ({ children }: { children: ReactNode }) => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.ShoppingList);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = window.localStorage.getItem('darkMode');
@@ -41,12 +44,18 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
+  const toggleAddModal = () => {
+    setIsAddModalOpen(prev => !prev);
+  };
+
   return (
     <UIContext.Provider value={{
       currentScreen,
       isDarkMode,
+      isAddModalOpen,
       navigate,
       toggleDarkMode,
+      toggleAddModal,
     }}>
       {children}
     </UIContext.Provider>
