@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from './lib/supabaseClient';
 import { Screen, ShoppingItem, Category, ShoppingList, Member } from './types';
 import { INITIAL_LISTS, INITIAL_CATEGORIES, INITIAL_PRESET_ITEMS } from './constants';
 import LoginScreen from './components/screens/LoginScreen';
@@ -9,19 +10,12 @@ import InviteScreen from './components/screens/InviteScreen';
 import BottomNav from './components/ui/BottomNav';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [session, setSession] = useState<any | null>(null);
   const [user, setUser] = useState<Member | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.ShoppingList);
   
-  const [lists, setLists] = useState<ShoppingList[]>(() => {
-    const saved = window.localStorage.getItem('shoppingLists');
-    return saved ? JSON.parse(saved) : INITIAL_LISTS;
-  });
-
-  const [activeListId, setActiveListId] = useState<string | null>(() => {
-    const saved = window.localStorage.getItem('activeListId');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [lists, setLists] = useState<ShoppingList[]>(INITIAL_LISTS);
+  const [activeListId, setActiveListId] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
   const [presetItems, setPresetItems] = useState<ShoppingItem[]>(INITIAL_PRESET_ITEMS);
@@ -48,28 +42,34 @@ function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
-    window.localStorage.setItem('shoppingLists', JSON.stringify(lists));
-  }, [lists]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
-    window.localStorage.setItem('activeListId', JSON.stringify(activeListId));
-  }, [activeListId]);
-  
-  useEffect(() => {
-    const storedUser = window.localStorage.getItem('user');
-    if (storedUser) {
-      const parsedUser: Member = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setIsLoggedIn(true);
-
-      setLists(currentLists => currentLists.map(list => {
-          if (list.members.some(member => member.id === parsedUser.id)) {
-              return list;
-          }
-          return { ...list, members: [parsedUser, ...list.members] };
-      }));
+    if (session) {
+      const fetchLists = async () => {
+        const { data, error } = await supabase
+          .from('shopping_lists')
+          .select('*')
+        if (error) {
+          console.error('Error fetching lists:', error)
+        } else {
+          setLists(data || [])
+        }
+      }
+      fetchLists()
     }
-  }, []);
+  }, [session])
 
   useEffect(() => {
     if ((!activeListId || !lists.some(l => l.id === activeListId)) && lists.length > 0) {
@@ -83,52 +83,34 @@ function App() {
   
   const activeList = lists.find(list => list.id === activeListId);
 
-  const handleLogin = () => {
-    const mockUser: Member = {
-      id: `google-${Date.now()}`,
-      name: 'Usuário do Google',
-      email: 'usuario.google@example.com',
-      avatar: `https://api.dicebear.com/8.x/initials/svg?seed=Usuário do Google`,
-    };
-    
-    window.localStorage.setItem('user', JSON.stringify(mockUser));
-    setUser(mockUser);
-    setIsLoggedIn(true);
-    
-    setLists(currentLists =>
-      currentLists.map(list => {
-        if (list.members.some(member => member.id === mockUser.id)) {
-          return list;
-        }
-        return { ...list, members: [mockUser, ...list.members] };
-      })
-    );
-  };
-  
-  const handleLogout = () => {
-      window.localStorage.removeItem('user');
-      window.localStorage.removeItem('shoppingLists');
-      window.localStorage.removeItem('activeListId');
-      setUser(null);
-      setIsLoggedIn(false);
-      setActiveListId(null);
-      setLists(INITIAL_LISTS);
-      setCurrentScreen(Screen.ShoppingList);
-  }
-
   const handleNavigate = (screen: Screen) => {
     setCurrentScreen(screen);
   };
   
-  const updateActiveList = (updatedList: Partial<ShoppingList>) => {
-      if (!activeListId) return;
-      setLists(lists.map(list => 
-          list.id === activeListId ? { ...list, ...updatedList } : list
-      ));
+  const updateActiveList = async (updatedList: Partial<ShoppingList>) => {
+    if (!activeListId) return;
+    const { data, error } = await supabase
+      .from('shopping_lists')
+      .update(updatedList)
+      .eq('id', activeListId);
+    if (error) {
+      console.error('Error updating list:', error);
+    } else {
+      setLists(lists.map(list => (list.id === activeListId ? { ...list, ...updatedList } : list)));
+    }
   };
   
-  const handleUpdateItems = (updatedItems: ShoppingItem[]) => {
-      updateActiveList({ items: updatedItems });
+  const handleUpdateItems = async (updatedItems: ShoppingItem[]) => {
+    if (!activeListId) return;
+    const { data, error } = await supabase
+      .from('shopping_lists')
+      .update({ items: updatedItems })
+      .eq('id', activeListId);
+    if (error) {
+      console.error('Error updating items:', error);
+    } else {
+      setLists(lists.map(list => (list.id === activeListId ? { ...list, items: updatedItems } : list)));
+    }
   }
   
   const handleSaveItem = (itemToSave: ShoppingItem) => {
@@ -225,30 +207,44 @@ function App() {
     setPresetItems(presetItems.map(item => item.id === updatedItem.id ? updatedItem : item));
   };
   
-  const handleAddList = (name: string) => {
-      const newList: ShoppingList = {
-          id: `list-${Date.now()}`,
-          name,
-          items: [],
-          members: user ? [user] : [],
-      };
-      setLists([...lists, newList]);
-      setActiveListId(newList.id);
+  const handleAddList = async (name: string) => {
+    const newList = {
+      name,
+      items: [],
+      members: user ? [user] : [],
+    };
+    const { data, error } = await supabase.from('shopping_lists').insert([newList]).select();
+    if (error) {
+      console.error('Error adding list:', error);
+    } else {
+      setLists([...lists, data[0]]);
+      setActiveListId(data[0].id);
       setCurrentScreen(Screen.ShoppingList);
+    }
   };
   
-  const handleDeleteList = (listId: string) => {
+  const handleDeleteList = async (listId: string) => {
     if (window.confirm("Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.")) {
-      const newLists = lists.filter(list => list.id !== listId);
-      setLists(newLists);
-      if (activeListId === listId) {
-        setActiveListId(newLists[0]?.id || null);
+      const { error } = await supabase.from('shopping_lists').delete().eq('id', listId);
+      if (error) {
+        console.error('Error deleting list:', error);
+      } else {
+        const newLists = lists.filter(list => list.id !== listId);
+        setLists(newLists);
+        if (activeListId === listId) {
+          setActiveListId(newLists[0]?.id || null);
+        }
       }
     }
   };
 
-  const handleRenameList = (listId: string, newName: string) => {
-    setLists(lists.map(list => list.id === listId ? { ...list, name: newName } : list));
+  const handleRenameList = async (listId: string, newName: string) => {
+    const { error } = await supabase.from('shopping_lists').update({ name: newName }).eq('id', listId);
+    if (error) {
+      console.error('Error renaming list:', error);
+    } else {
+      setLists(lists.map(list => (list.id === listId ? { ...list, name: newName } : list)));
+    }
   };
 
   const handleSelectList = (listId: string) => {
@@ -256,8 +252,8 @@ function App() {
       setCurrentScreen(Screen.ShoppingList);
   }
 
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={handleLogin} />;
+  if (!session) {
+    return <LoginScreen onLogin={() => supabase.auth.signInWithOAuth({ provider: 'google' })} />;
   }
 
   const renderScreen = () => {
@@ -290,7 +286,7 @@ function App() {
             isDarkMode={isDarkMode} 
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
             onNavigate={handleNavigate} 
-            onLogout={handleLogout} 
+            onLogout={() => supabase.auth.signOut()}
             hasActiveList={!!activeList}
             lists={lists}
             onAddList={handleAddList}
