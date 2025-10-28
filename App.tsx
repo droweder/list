@@ -7,7 +7,8 @@ import { Screen } from './types';
 
 import LoginScreen from './components/screens/LoginScreen';
 import ShoppingListScreen from './components/screens/ShoppingListScreen';
-import SettingsScreen from './components/screens/SettingsScreen';
+import ItemFormScreen from './components/screens/ItemFormScreen';
+import { SettingsScreen } from './components/screens/SettingsScreen';
 import ProductsAndCategoriesScreen from './components/screens/ProductsAndCategoriesScreen';
 import MyListsScreen from './components/screens/MyListsScreen';
 import InviteScreen from './components/screens/InviteScreen';
@@ -30,6 +31,8 @@ function App() {
     switch (currentScreen) {
       case Screen.ShoppingList:
         return <ShoppingListScreen />;
+      case Screen.ItemForm:
+        return <ItemFormScreen />;
       case Screen.MyLists:
         return <MyListsScreen />;
       case Screen.Invite:
