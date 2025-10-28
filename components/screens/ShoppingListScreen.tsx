@@ -50,7 +50,7 @@ const ShoppingListScreen: React.FC = () => {
     updateActiveList({ items: updatedItems });
   };
 
-  const groupedItems = items.reduce((acc, item) => {
+  const groupedItems = (items || []).reduce((acc, item) => {
     const category = item.category;
     if (!acc[category]) {
       acc[category] = [];
