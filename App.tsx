@@ -10,11 +10,12 @@ import InviteScreen from './components/screens/InviteScreen';
 import BottomNav from './components/ui/BottomNav';
 
 function App() {
+  const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any | null>(null);
   const [user, setUser] = useState<Member | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.ShoppingList);
   
-  const [lists, setLists] = useState<ShoppingList[]>(INITIAL_LISTS);
+  const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
@@ -71,20 +72,22 @@ function App() {
   }, [session]);
 
   useEffect(() => {
-    if (session) {
-      const fetchLists = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+      if (session) {
         const { data, error } = await supabase
           .from('shopping_lists')
-          .select('*')
+          .select('*');
         if (error) {
-          console.error('Error fetching lists:', error)
+          console.error('Error fetching lists:', error);
         } else {
-          setLists(data || [])
+          setLists(data || []);
         }
       }
-      fetchLists()
-    }
-  }, [session])
+      setLoading(false);
+    };
+    fetchData();
+  }, [session]);
 
   useEffect(() => {
     if ((!activeListId || !lists.some(l => l.id === activeListId)) && lists.length > 0) {
@@ -265,6 +268,19 @@ function App() {
   const handleSelectList = (listId: string) => {
       setActiveListId(listId);
       setCurrentScreen(Screen.ShoppingList);
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+            Meu Mercadin<span className="text-primary-500">™</span>
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
