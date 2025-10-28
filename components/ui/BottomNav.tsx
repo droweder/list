@@ -2,6 +2,7 @@
 import React from 'react';
 import { Screen } from '../../types';
 import { useData } from '@/contexts/DataContext';
+import { useUI } from '@/contexts/UIContext';
 
 interface BottomNavProps {
   activeScreen: Screen;
@@ -10,6 +11,7 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, onNavigate }) => {
   const { activeList } = useData();
+  const { toggleAddModal } = useUI();
 
   const navItems = [
     {
@@ -22,32 +24,68 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeScreen, onNavigate }) => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1)]">
-      <div className="max-w-4xl mx-auto flex justify-around">
-        {navItems.map(({ screen, label, icon }) => (
+      <div className="max-w-4xl mx-auto flex justify-around items-center">
+        {/* Left Item */}
+        <NavButton
+          screen={navItems[0].screen}
+          label={navItems[0].label}
+          icon={navItems[0].icon}
+          isActive={activeScreen === navItems[0].screen}
+          onClick={() => onNavigate(navItems[0].screen)}
+        />
+
+        {/* Center Add Button */}
+        <div className="relative">
           <button
-            key={screen}
-            onClick={() => onNavigate(screen)}
-            className={`flex flex-col items-center justify-center w-full py-2 px-1 text-center transition-colors duration-200 ${
-              activeScreen === screen
-                ? 'text-primary-600 dark:text-primary-400'
-                : 'text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-300'
-            }`}
+            onClick={toggleAddModal}
+            className="bg-primary-600 text-white rounded-full p-4 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transform transition-transform hover:scale-110 -mt-8"
+            aria-label="Adicionar item"
           >
-            <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
-            <span className="text-xs mt-1 truncate max-w-[10ch]">{label}</span>
+            <PlusIcon />
           </button>
-        ))}
+        </div>
+
+        {/* Right Item */}
+        <NavButton
+          screen={navItems[1].screen}
+          label={navItems[1].label}
+          icon={navItems[1].icon}
+          isActive={activeScreen === navItems[1].screen}
+          onClick={() => onNavigate(navItems[1].screen)}
+        />
       </div>
     </nav>
   );
 };
 
+interface NavButtonProps {
+  screen: Screen;
+  label: string;
+  icon: JSX.Element;
+  isActive: boolean;
+  onClick: () => void;
+}
 
-const ListIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-  </svg>
+const NavButton: React.FC<NavButtonProps> = ({ label, icon, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex flex-col items-center justify-center w-full py-2 px-1 text-center transition-colors duration-200 ${
+      isActive
+        ? 'text-primary-600 dark:text-primary-400'
+        : 'text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-300'
+    }`}
+  >
+    <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
+    <span className="text-xs mt-1 truncate max-w-[10ch]">{label}</span>
+  </button>
 );
+
+const PlusIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    </svg>
+);
+
 const ShoppingCartIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

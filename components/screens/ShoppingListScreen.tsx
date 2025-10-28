@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useUI } from '@/contexts/UIContext';
-import { Screen, ShoppingItem } from '@/types';
+import { ShoppingItem } from '@/types';
 import Header from '../ui/Header';
 import Toast from '../ui/Toast';
 import EditItemModal from '../modals/EditItemModal';
@@ -10,10 +10,9 @@ import AddFromProductBankModal from '../modals/AddFromProductBankModal';
 
 const ShoppingListScreen: React.FC = () => {
   const { activeList, removeItemFromActiveList, undoRemoveItem, lastRemovedItem, updateActiveList } = useData();
-  const { navigate } = useUI();
+  const { isAddModalOpen, toggleAddModal } = useUI();
   const [showToast, setShowToast] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<ShoppingItem | null>(null);
 
   if (!activeList) {
@@ -77,7 +76,7 @@ const ShoppingListScreen: React.FC = () => {
         {items.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500 dark:text-gray-400">Sua lista está vazia.</p>
-            <p className="text-gray-500 dark:text-gray-400">Clique em "+" para adicionar itens.</p>
+            <p className="text-gray-500 dark:text-gray-400">Clique no botão central para adicionar itens.</p>
           </div>
         ) : (
           categories.map(category => (
@@ -109,14 +108,6 @@ const ShoppingListScreen: React.FC = () => {
         )}
       </div>
 
-      <button
-        onClick={() => setIsAddModalOpen(true)}
-        className="fixed bottom-20 right-4 bg-primary-600 text-white rounded-full p-4 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transform transition-transform hover:scale-110"
-        aria-label="Adicionar item"
-      >
-        <PlusIcon />
-      </button>
-
       {showToast && lastRemovedItem && (
         <Toast
           message={`${lastRemovedItem.name} removido.`}
@@ -134,19 +125,13 @@ const ShoppingListScreen: React.FC = () => {
 
       <AddFromProductBankModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={toggleAddModal}
         onAddItem={handleAddItem}
         listItems={items}
       />
     </div>
   );
 };
-
-const PlusIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-  </svg>
-);
 
 const PencilIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
