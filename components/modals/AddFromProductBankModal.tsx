@@ -86,7 +86,7 @@ const AddFromProductBankModal: React.FC<AddFromProductBankModalProps> = ({ isOpe
             Object.keys(filteredProducts).sort().map(category => (
               <div key={category}>
                 <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 capitalize mb-2 sticky top-0 bg-white dark:bg-gray-800 py-1">{category}</h3>
-                {filteredProducts[category].map(product => (
+                {filteredProducts[category] && filteredProducts[category].map(product => (
                   <div key={product.id} className="flex justify-between items-center py-2 px-1 border-b border-gray-200 dark:border-gray-700">
                     <span className="text-gray-800 dark:text-gray-200">{product.name}</span>
                     <button
