@@ -28,8 +28,11 @@ const AddFromProductBankModal: React.FC<AddFromProductBankModalProps> = ({ isOpe
 
   const filteredProducts = useMemo(() => {
     const grouped: Record<string, ShoppingItem[]> = {};
-    products
-      .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    const productsToDisplay = searchTerm
+      ? products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : products;
+
+    productsToDisplay
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         if (!grouped[p.category]) {
