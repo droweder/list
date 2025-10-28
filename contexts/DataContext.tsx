@@ -1,13 +1,13 @@
 // contexts/DataContext.tsx
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { ShoppingList, ShoppingItem, Member, Category } from '@/types';
-import { INITIAL_LISTS, INITIAL_CATEGORIES, INITIAL_PRESET_ITEMS } from '@/constants';
+import { INITIAL_LISTS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '@/constants';
 
 interface DataContextType {
   lists: ShoppingList[];
   activeList: ShoppingList | undefined;
   categories: string[];
-  presetItems: ShoppingItem[];
+  products: ShoppingItem[];
   addList: (name: string, icon: string, user: Member | null) => void;
   deleteList: (listId: string) => void;
   renameList: (listId: string, newName: string) => void;
@@ -19,9 +19,9 @@ interface DataContextType {
   addCategory: (category: string) => void;
   deleteCategory: (category: string) => void;
   updateCategory: (oldName: string, newName: string) => void;
-  addPresetItem: (item: Pick<ShoppingItem, 'name' | 'category'>) => void;
-  deletePresetItem: (itemId: string) => void;
-  updatePresetItem: (item: ShoppingItem) => void;
+  addProduct: (item: Pick<ShoppingItem, 'name' | 'category'>) => void;
+  deleteProduct: (itemId: string) => void;
+  updateProduct: (item: ShoppingItem) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -30,7 +30,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [lists, setLists] = useState<ShoppingList[]>(INITIAL_LISTS);
   const [activeListId, setActiveListId] = useState<string | null>(INITIAL_LISTS[0]?.id || null);
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
-  const [presetItems, setPresetItems] = useState<ShoppingItem[]>(INITIAL_PRESET_ITEMS);
+  const [products, setProducts] = useState<ShoppingItem[]>(INITIAL_PRODUCTS);
   const [lastRemovedItem, setLastRemovedItem] = useState<ShoppingItem | null>(null);
 
   const activeList = lists.find(list => list.id === activeListId);
@@ -116,23 +116,23 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addPresetItem = (item: Pick<ShoppingItem, 'name' | 'category'>) => {
-    const newPreset: ShoppingItem = {
+  const addProduct = (item: Pick<ShoppingItem, 'name' | 'category'>) => {
+    const newProduct: ShoppingItem = {
       ...item,
       id: crypto.randomUUID(),
       quantity: 1,
       notes: '',
       purchased: false,
     };
-    setPresetItems([...presetItems, newPreset]);
+    setProducts([...products, newProduct]);
   };
 
-  const deletePresetItem = (itemId: string) => {
-    setPresetItems(presetItems.filter(item => item.id !== itemId));
+  const deleteProduct = (itemId: string) => {
+    setProducts(products.filter(item => item.id !== itemId));
   };
 
-  const updatePresetItem = (updatedItem: ShoppingItem) => {
-    setPresetItems(presetItems.map(item => item.id === updatedItem.id ? updatedItem : item));
+  const updateProduct = (updatedItem: ShoppingItem) => {
+    setProducts(products.map(item => item.id === updatedItem.id ? updatedItem : item));
   };
 
   return (
@@ -140,7 +140,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       lists,
       activeList,
       categories,
-      presetItems,
+      products,
       addList,
       deleteList,
       renameList,
@@ -152,9 +152,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       addCategory,
       deleteCategory,
       updateCategory,
-      addPresetItem,
-      deletePresetItem,
-      updatePresetItem,
+      addProduct,
+      deleteProduct,
+      updateProduct,
     }}>
       {children}
     </DataContext.Provider>
