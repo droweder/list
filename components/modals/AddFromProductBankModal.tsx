@@ -27,7 +27,7 @@ const AddFromProductBankModal: React.FC<AddFromProductBankModalProps> = ({ isOpe
   };
 
   const filteredProducts = useMemo(() => {
-    const listItemsNames = listItems.map(item => item.name.toLowerCase());
+    const listItemsNames = (listItems || []).map(item => item.name.toLowerCase());
     const availableProducts = products.filter(p => !listItemsNames.includes(p.name.toLowerCase()));
 
     const productsToDisplay = searchTerm
