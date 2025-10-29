@@ -1,6 +1,4 @@
-import { ShoppingItem, Category, ShoppingList, Member } from './types';
-
-export const INITIAL_CATEGORIES: string[] = Object.values(Category);
+import { ShoppingItem, ShoppingList, Member } from './types';
 
 export const UNITS_OF_MEASUREMENT: { value: string; label: string }[] = [
   { value: 'kg', label: 'kg – quilograma' },

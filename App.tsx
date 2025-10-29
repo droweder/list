@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabaseClient';
 import { Screen, ShoppingItem, Category, ShoppingList, Member } from './types';
-import { INITIAL_LISTS, INITIAL_CATEGORIES, INITIAL_PRESET_ITEMS } from './constants';
 import LoginScreen from './components/screens/LoginScreen';
 import ShoppingListScreen from './components/screens/ShoppingListScreen';
 import SettingsScreen from './components/screens/SettingsScreen';
