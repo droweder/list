@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ShoppingItem, Category } from '../../types';
+import type { ShoppingItem, Category } from '../../types';
 import Header from '../ui/Header';
 import Modal from '../ui/Modal';
 import ItemForm from '../ui/ItemForm';
