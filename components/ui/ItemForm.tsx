@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { ShoppingItem } from '../../types';
-import { Category } from '../../types';
+import type { ShoppingItem, Category } from '../../types';
 import { UNITS_OF_MEASUREMENT } from '../../constants';
 
 interface ItemFormProps {

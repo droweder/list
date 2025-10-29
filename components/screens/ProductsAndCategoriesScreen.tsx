@@ -3,7 +3,7 @@ import Header from '../ui/Header';
 import { ShoppingItem } from '../../types';
 import { UNITS_OF_MEASUREMENT } from '../../constants';
 
-import { Category } from '../../types';
+import type { Category } from '../../types';
 
 interface ProductsAndCategoriesScreenProps {
   categories: Category[];
