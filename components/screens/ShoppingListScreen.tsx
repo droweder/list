@@ -8,7 +8,7 @@ import ItemForm from '../ui/ItemForm';
 interface ShoppingListScreenProps {
   listName?: string;
   items?: ShoppingItem[];
-  categories: string[];
+  categories: Category[];
   onToggleItem: (itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
   onSaveItem: (item: ShoppingItem) => void;
@@ -61,7 +61,7 @@ const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({ listName, items
       name: searchTerm,
       quantity: 1,
       unit: 'un',
-      category: categories[0] || Category.Outros,
+      category: categories.length > 0 ? categories[0].name : 'Outros',
       notes: '',
       purchased: false,
     });

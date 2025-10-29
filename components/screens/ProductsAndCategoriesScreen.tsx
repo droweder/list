@@ -3,14 +3,16 @@ import Header from '../ui/Header';
 import { ShoppingItem } from '../../types';
 import { UNITS_OF_MEASUREMENT } from '../../constants';
 
+import { Category } from '../../types';
+
 interface ProductsAndCategoriesScreenProps {
-  categories: string[];
-  onAddCategory: (category: string) => void;
-  onDeleteCategory: (category: string) => void;
-  onUpdateCategory: (oldName: string, newName: string) => void;
+  categories: Category[];
+  onAddCategory: (name: string) => void;
+  onDeleteCategory: (id: number) => void;
+  onUpdateCategory: (id: number, newName: string) => void;
   presetItems: ShoppingItem[];
   onAddPresetItem: (item: Pick<ShoppingItem, 'name' | 'category' | 'unit'>) => void;
-  onDeletePresetItem: (itemId: string) => void;
+  onDeletePresetItem: (itemId: number) => void;
   onUpdatePresetItem: (item: ShoppingItem) => void;
 }
 
@@ -58,7 +60,7 @@ const ProductsAndCategoriesScreen: React.FC<ProductsAndCategoriesScreenProps> = 
 
 const ProductManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ presetItems, categories, onAddPresetItem, onUpdatePresetItem, onDeletePresetItem }) => {
     const [newItemName, setNewItemName] = useState('');
-    const [newItemCategory, setNewItemCategory] = useState(categories[0] || '');
+    const [newItemCategory, setNewItemCategory] = useState(categories[0]?.name || '');
     const [newItemUnit, setNewItemUnit] = useState('un');
     const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
 
@@ -107,7 +109,7 @@ const ProductManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ pres
                     <div className="sm:col-span-2">
                         <label htmlFor="new-item-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Categoria</label>
                         <select id="new-item-category" value={newItemCategory} onChange={(e) => setNewItemCategory(e.target.value)} className="mt-1 w-full px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500">
-                            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
                         </select>
                     </div>
 
@@ -133,7 +135,7 @@ const ProductManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ pres
                                         <div className="flex-grow w-full grid grid-cols-1 sm:grid-cols-3 gap-2">
                                             <input type="text" value={editingItem.name} onChange={(e) => setEditingItem({...editingItem, name: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-primary-500 rounded-md" />
                                             <select value={editingItem.category} onChange={(e) => setEditingItem({...editingItem, category: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-primary-500 rounded-md">
-                                                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                                {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
                                             </select>
                                             <select value={editingItem.unit} onChange={(e) => setEditingItem({...editingItem, unit: e.target.value })} className="px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-primary-500 rounded-md">
                                                 {UNITS_OF_MEASUREMENT.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
@@ -170,7 +172,7 @@ const ProductManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ pres
 
 const CategoryManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ categories, onAddCategory, onDeleteCategory, onUpdateCategory }) => {
   const [newCategory, setNewCategory] = useState('');
-  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingText, setEditingText] = useState('');
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -179,14 +181,14 @@ const CategoryManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ cat
     setNewCategory('');
   };
   
-  const handleEdit = (category: string) => {
+  const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setEditingText(category);
+    setEditingText(category.name);
   };
   
   const handleUpdate = () => {
     if (editingCategory && editingText.trim()) {
-        onUpdateCategory(editingCategory, editingText.trim());
+        onUpdateCategory(editingCategory.id, editingText.trim());
         setEditingCategory(null);
         setEditingText('');
     }
@@ -197,9 +199,9 @@ const CategoryManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ cat
     setEditingText('');
   }
   
-  const handleDelete = (category: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir a categoria "${category}"? Os itens nesta categoria serão movidos para "Outros".`)) {
-        onDeleteCategory(category);
+  const handleDelete = (category: Category) => {
+    if (window.confirm(`Tem certeza que deseja excluir a categoria "${category.name}"?`)) {
+        onDeleteCategory(category.id);
     }
   };
 
@@ -217,14 +219,14 @@ const CategoryManagementTab: React.FC<ProductsAndCategoriesScreenProps> = ({ cat
             <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 p-4 border-b border-gray-200 dark:border-gray-700">Minhas Categorias</h2>
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {categories.map(category => (
-                <li key={category} className="p-4 flex justify-between items-center">
-                {editingCategory === category ? (
+                <li key={category.id} className="p-4 flex justify-between items-center">
+                {editingCategory?.id === category.id ? (
                     <input type="text" value={editingText} onChange={(e) => setEditingText(e.target.value)} onBlur={handleUpdate} onKeyDown={(e) => e.key === 'Enter' && handleUpdate()} autoFocus className="flex-grow px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-primary-500 rounded-md" />
                 ) : (
-                    <span className="text-gray-800 dark:text-gray-100">{category}</span>
+                    <span className="text-gray-800 dark:text-gray-100">{category.name}</span>
                 )}
                 <div className="flex items-center gap-2">
-                    {editingCategory === category ? (
+                    {editingCategory?.id === category.id ? (
                         <>
                            <button onClick={handleUpdate} className="p-1 text-green-500 hover:text-green-700"><CheckIcon /></button>
                            <button onClick={handleCancelEdit} className="p-1 text-gray-500 hover:text-gray-700"><XIcon /></button>
