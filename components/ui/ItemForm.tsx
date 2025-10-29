@@ -5,7 +5,7 @@ import { UNITS_OF_MEASUREMENT } from '../../constants';
 
 interface ItemFormProps {
   item: ShoppingItem | null;
-  categories: string[];
+  categories: Category[];
   onSave: (item: ShoppingItem) => void;
   onDelete: (itemId: string) => void;
   onCancel: () => void;
@@ -16,7 +16,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, categories, onSave, onDelete,
     name: '',
     quantity: 1,
     unit: 'un',
-    category: Category.Alimentos,
+    category: categories[0]?.name || 'Outros',
     notes: '',
   });
 
@@ -113,7 +113,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, categories, onSave, onDelete,
                     onChange={handleChange}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
                 >
-                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
                 </select>
             </div>
 

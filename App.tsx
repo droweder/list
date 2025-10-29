@@ -18,8 +18,8 @@ function App() {
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
-  const [presetItems, setPresetItems] = useState<ShoppingItem[]>(INITIAL_PRESET_ITEMS);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [presetItems, setPresetItems] = useState<ShoppingItem[]>([]);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -75,14 +75,25 @@ function App() {
     const fetchData = async () => {
       setLoading(true);
       if (session) {
-        const { data, error } = await supabase
-          .from('shopping_lists')
-          .select('*');
-        if (error) {
-          console.error('Error fetching lists:', error);
-        } else {
-          setLists(data || []);
-        }
+        // Fetch lists, categories, and products in parallel
+        const [
+          { data: listData, error: listError },
+          { data: categoryData, error: categoryError },
+          { data: productData, error: productError }
+        ] = await Promise.all([
+          supabase.from('shopping_lists').select('*'),
+          supabase.from('categories').select('*'),
+          supabase.from('products').select('*')
+        ]);
+
+        if (listError) console.error('Error fetching lists:', listError);
+        else setLists(listData || []);
+
+        if (categoryError) console.error('Error fetching categories:', categoryError);
+        else setCategories(categoryData || []);
+
+        if (productError) console.error('Error fetching products:', productError);
+        else setPresetItems(productData || []);
       }
       setLoading(false);
     };
@@ -176,53 +187,64 @@ function App() {
       updateActiveList({ members: updatedMembers });
   };
   
-  const handleAddCategory = (category: string) => {
-    if (category && !categories.includes(category)) {
-      setCategories([...categories, category]);
+  const handleAddCategory = async (name: string) => {
+    if (name && !categories.some(c => c.name === name)) {
+      const { data, error } = await supabase.from('categories').insert([{ name }]).select();
+      if (error) {
+        console.error('Error adding category:', error);
+      } else {
+        setCategories([...categories, data[0]]);
+      }
     }
   };
 
-  const handleDeleteCategory = (categoryToDelete: string) => {
-    const updatedLists = lists.map(list => ({
-        ...list,
-        items: list.items.map(item =>
-            item.category === categoryToDelete ? { ...item, category: Category.Outros } : item
-        )
-    }));
-    setLists(updatedLists);
-    setCategories(categories.filter(cat => cat !== categoryToDelete));
+  const handleDeleteCategory = async (id: number) => {
+    // Here you might want to handle what happens to items with this category.
+    // For now, we'll just delete the category.
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting category:', error);
+    } else {
+      setCategories(categories.filter(cat => cat.id !== id));
+    }
   };
   
-  const handleUpdateCategory = (oldName: string, newName: string) => {
-    if (newName && !categories.includes(newName)) {
-      const updatedLists = lists.map(list => ({
-          ...list,
-          items: list.items.map(item =>
-            item.category === oldName ? { ...item, category: newName } : item
-          )
-      }));
-      setLists(updatedLists);
-      setCategories(categories.map(cat => cat === oldName ? newName : cat));
+  const handleUpdateCategory = async (id: number, newName: string) => {
+    if (newName && !categories.some(c => c.name === newName)) {
+      const { data, error } = await supabase.from('categories').update({ name: newName }).eq('id', id).select();
+      if (error) {
+        console.error('Error updating category:', error);
+      } else {
+        setCategories(categories.map(cat => (cat.id === id ? data[0] : cat)));
+      }
     }
   };
 
-  const handleAddPresetItem = (item: Pick<ShoppingItem, 'name' | 'category' | 'unit'>) => {
-    const newPreset: ShoppingItem = {
-      ...item,
-      id: `preset-${Date.now()}`,
-      quantity: 1,
-      notes: '',
-      purchased: false,
-    };
-    setPresetItems([...presetItems, newPreset]);
+  const handleAddPresetItem = async (item: Pick<ShoppingItem, 'name' | 'category' | 'unit'>) => {
+    const { data, error } = await supabase.from('products').insert([item]).select();
+    if (error) {
+      console.error('Error adding preset item:', error);
+    } else {
+      setPresetItems([...presetItems, data[0]]);
+    }
   };
 
-  const handleDeletePresetItem = (itemId: string) => {
-    setPresetItems(presetItems.filter(item => item.id !== itemId));
+  const handleDeletePresetItem = async (itemId: number) => {
+    const { error } = await supabase.from('products').delete().eq('id', itemId);
+    if (error) {
+      console.error('Error deleting preset item:', error);
+    } else {
+      setPresetItems(presetItems.filter(item => item.id !== itemId));
+    }
   };
 
-  const handleUpdatePresetItem = (updatedItem: ShoppingItem) => {
-    setPresetItems(presetItems.map(item => item.id === updatedItem.id ? updatedItem : item));
+  const handleUpdatePresetItem = async (updatedItem: ShoppingItem) => {
+    const { data, error } = await supabase.from('products').update(updatedItem).eq('id', updatedItem.id).select();
+    if (error) {
+      console.error('Error updating preset item:', error);
+    } else {
+      setPresetItems(presetItems.map(item => (item.id === updatedItem.id ? data[0] : item)));
+    }
   };
   
   const handleAddList = async (name: string) => {

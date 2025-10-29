@@ -1,9 +1,6 @@
-export enum Category {
-  Alimentos = 'Alimentos',
-  Bebidas = 'Bebidas',
-  Higiene = 'Higiene',
-  Limpeza = 'Limpeza',
-  Outros = 'Outros',
+export interface Category {
+  id: number;
+  name: string;
 }
 
 export interface ShoppingItem {
@@ -11,7 +8,7 @@ export interface ShoppingItem {
   name: string;
   quantity: number;
   unit: string;
-  category: Category | string;
+  category: string;
   notes: string;
   purchased: boolean;
 }
