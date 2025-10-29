@@ -34,7 +34,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, categories, onSave, onDelete,
             name: '',
             quantity: 1,
             unit: 'un',
-            category: categories[0] || Category.Alimentos,
+            category: categories[0]?.name || 'Outros',
             notes: '',
         });
     }
